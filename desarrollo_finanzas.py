@@ -103,7 +103,7 @@ class Sesion:
 def reportes_otm(fecha_ini, fecha_fin):
     USER = 'GCORTES'
     PASS = 'Laku1979#gonza'
-    SERVER = 'otmgtm-a621157.otmgtm.us-phoenix-1.ocs'
+    SERVER = 'https://otmgtm-analytics-a621157.otmgtm.us-phoenix-1.ocs.oraclecloud.com/'
     CARPETA = '/Custom/ESGARI/Reportes Finanzas/XDO'
 
     user = Sesion(USER, PASS, SERVER)
@@ -249,6 +249,7 @@ if __name__ == '__main__':
     print(contenido)
     #for i, item in enumerate(contenido):
         #print(f"[{i}] Tipo: {type(item)} → Valor: {item}")
+
 
 
 

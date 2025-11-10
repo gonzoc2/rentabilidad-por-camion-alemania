@@ -4,6 +4,7 @@ pandas==1.5.3
 numpy==1.23.5
 openpyxl==3.1.5
 requests==2.32.3
+zeep
 
 # Visualización
 matplotlib==3.9.3

@@ -15,5 +15,9 @@ fecha_ini, fecha_fin = rango_mes_pasado()
 df = ff.reportes_otm_raw(fecha_ini, fecha_fin)
 st.dataframe(df)
 
+dic = ff.reportes_otm_diccionario(fecha_ini, fecha_fin)
+st.write(dic)
+
+
 
 

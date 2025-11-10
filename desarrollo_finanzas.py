@@ -23,9 +23,15 @@ class Sesion:
         self.server = server
         self.session = requests.Session()
         self.session.auth = HTTPBasicAuth(user, password)
-        self.client = Client(f"https://{server}.oraclecloud.com:443/xmlpserver/services/ExternalReportWSSService?WSDL", 
-                             transport=Transport(session=self.session)
+        # Clean up server string (removes https:// and trailing slashes if provided)
+        server = re.sub(r"^https?://", "", server.strip("/"))
+        self.server = server
+        
+        self.client = Client(
+            f"https://{server}/xmlpserver/services/ExternalReportWSSService?WSDL",
+            transport=Transport(session=self.session)
         )
+
     
     def params(self, params: list[dict]) -> list:
         param_name_value_type = self.client.get_type("ns0:ParamNameValue")
@@ -249,6 +255,7 @@ if __name__ == '__main__':
     print(contenido)
     #for i, item in enumerate(contenido):
         #print(f"[{i}] Tipo: {type(item)} → Valor: {item}")
+
 
 
 

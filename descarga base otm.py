@@ -12,5 +12,6 @@ def rango_mes_pasado():
 fecha_ini, fecha_fin = rango_mes_pasado()
 
 # Llama tu función
-df = ff.reportes_otm(fecha_ini, fecha_fin)
+df = ff.reportes_otm_raw(fecha_ini, fecha_fin)
 st.header(df)
+

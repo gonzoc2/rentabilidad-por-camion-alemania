@@ -105,7 +105,68 @@ class Sesion:
         
     def __str__(self):
         return f'Hola {self.user}'
-    
+
+def reportes_otm_raw(fecha_ini, fecha_fin):
+    USER = 'GCORTES'
+    PASS = 'Laku1979#gonza'
+    SERVER = 'otmgtm-analytics-a621157.otmgtm.us-phoenix-1.ocs.oraclecloud.com'
+    CARPETA = '/Custom/ESGARI/Reportes Finanzas/XDO'
+
+    user = Sesion(USER, PASS, SERVER)
+
+    params = [
+        {
+            'dataType': 'Date',
+            'name': 'P_FECHA_INI',
+            'dateFormatString': 'DD-MM-YYYY',
+            'values': fecha_ini.strftime('%m-%d-%Y'),
+            'multiValuesAllowed': False,
+            'refreshParamOnChange': False,
+            'selectAll': False,
+            'templateParam': False,
+            'useNullForAll': False
+        },
+        {
+            'dataType': 'Date',
+            'name': 'P_FECHA_FIN',
+            'dateFormatString': 'DD-MM-YYYY',
+            'values': fecha_fin.strftime('%m-%d-%Y'),
+            'multiValuesAllowed': False,
+            'refreshParamOnChange': False,
+            'selectAll': False,
+            'templateParam': False,
+            'useNullForAll': False
+        }
+    ]
+
+    contenido = user.getFolderContent(CARPETA)
+
+    try:
+        reportes = contenido.item
+    except AttributeError:
+        reportes = contenido
+
+    dfs = {}
+    errores = {}
+
+    for r in reportes:
+        if r['type'] != 'Report' or not r['absolutePath'].endswith('.xdo'):
+            continue
+
+        nombre = r['displayName']
+        ruta = r['absolutePath']
+
+        try:
+            salida = user.runReport(ruta, params=params)
+            contenido_csv = salida.reportBytes if hasattr(salida, "reportBytes") else salida
+            df = pd.read_csv(io.BytesIO(contenido_csv))
+            dfs[nombre] = df
+        except Exception as e:
+            errores[nombre] = str(e)
+
+    return dfs  # Diccionario {nombre_reporte: dataframe}
+
+
 def reportes_otm(fecha_ini, fecha_fin):
     USER = 'GCORTES'
     PASS = 'Laku1979#gonza'
@@ -255,6 +316,7 @@ if __name__ == '__main__':
     print(contenido)
     #for i, item in enumerate(contenido):
         #print(f"[{i}] Tipo: {type(item)} → Valor: {item}")
+
 
 
 

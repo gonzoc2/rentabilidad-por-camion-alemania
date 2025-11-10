@@ -117,26 +117,24 @@ def reportes_otm_raw(fecha_ini, fecha_fin):
     params = [
         {
             'dataType': 'Date',
-            'name': 'P_FECHA_INI',
+            'name':'P_FECHA_INI',
             'dateFormatString': 'DD-MM-YYYY',
             'values': fecha_ini.strftime('%m-%d-%Y'),
             'multiValuesAllowed': False,
             'refreshParamOnChange': False,
             'selectAll': False,
             'templateParam': False,
-            'useNullForAll': False
-        },
+            'useNullForAll': False},
         {
             'dataType': 'Date',
-            'name': 'P_FECHA_FIN',
+            'name':'P_FECHA_FIN',
             'dateFormatString': 'DD-MM-YYYY',
             'values': fecha_fin.strftime('%m-%d-%Y'),
             'multiValuesAllowed': False,
             'refreshParamOnChange': False,
             'selectAll': False,
             'templateParam': False,
-            'useNullForAll': False
-        }
+            'useNullForAll': False}
     ]
 
     contenido = user.getFolderContent(CARPETA)
@@ -158,13 +156,43 @@ def reportes_otm_raw(fecha_ini, fecha_fin):
 
         try:
             salida = user.runReport(ruta, params=params)
-            contenido_csv = salida.reportBytes if hasattr(salida, "reportBytes") else salida
+            if hasattr(salida, "reportBytes"):
+                contenido_csv = salida.reportBytes
+            else:
+                contenido_csv = salida
             df = pd.read_csv(io.BytesIO(contenido_csv))
             dfs[nombre] = df
         except Exception as e:
             errores[nombre] = str(e)
 
-    return dfs  # Diccionario {nombre_reporte: dataframe}
+    # --- Combinar DataFrames por ORDEN_DE_LIBERACION ---
+
+    dataframes_con_orden = [df for df in dfs.values() if "ORDEN_DE_LIBERACION" in df.columns]
+
+    if dataframes_con_orden:
+
+        # Merge progresivo sin renombrar columnas
+        df_merged = dataframes_con_orden[0]
+        for df in dataframes_con_orden[1:]:
+            df_merged = pd.merge(df_merged, df, how="outer", on="ORDEN_DE_LIBERACION")
+
+        # --- Eliminar columnas duplicadas con mismos valores ---
+        cols_seen = {}
+        cols_to_drop = []
+
+        for col in df_merged.columns:
+            if col == "ORDEN_DE_LIBERACION":
+                continue
+            if col in cols_seen:
+                # Compara con la columna ya vista
+                if df_merged[col].equals(df_merged[cols_seen[col]]):
+                    cols_to_drop.append(col)
+            else:
+                cols_seen[col] = col  # primera vez que aparece
+
+        df_merged = df_merged.drop(columns=cols_to_drop)
+
+        return df_merged
 
 
 def reportes_otm(fecha_ini, fecha_fin):
@@ -316,6 +344,7 @@ if __name__ == '__main__':
     print(contenido)
     #for i, item in enumerate(contenido):
         #print(f"[{i}] Tipo: {type(item)} → Valor: {item}")
+
 
 
 

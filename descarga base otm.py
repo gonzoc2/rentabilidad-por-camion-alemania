@@ -13,6 +13,7 @@ fecha_ini, fecha_fin = rango_mes_pasado()
 
 # Llama tu función
 df = ff.reportes_otm_raw(fecha_ini, fecha_fin)
-st.head(df)
+st.dataframe(df)
+
 
 
